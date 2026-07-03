@@ -1,0 +1,4 @@
+interface:
+  display_name: "aliyun-devops"
+  short_description: "通过云效 CLI 和 API 处理 Codeup、Projex、Flow、AppStack 等 DevOps 场景。"
+  default_prompt: "Use $aliyun-devops to inspect or operate Alibaba Cloud Yunxiao resources, route Codeup/Projex/Flow/AppStack requests, and prefer the bundled CLI before raw API calls."

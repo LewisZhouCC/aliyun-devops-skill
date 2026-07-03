@@ -1,0 +1,270 @@
+import * as project from '../operations/projex/project.js';
+import * as workitem from '../operations/projex/workitem.js';
+import * as sprint from '../operations/projex/sprint.js';
+import * as version from '../operations/projex/version.js';
+import * as attachment from '../operations/projex/attachment.js';
+import * as types from '../common/types.js';
+import { z } from 'zod';
+export const handleProjectManagementTools = async (request) => {
+    switch (request.params.name) {
+        // Project Operations
+        case "get_project": {
+            const args = types.GetProjectSchema.parse(request.params.arguments);
+            const projectInfo = await project.getProjectFunc(args.organizationId, args.id);
+            return {
+                content: [{ type: "text", text: JSON.stringify(projectInfo, null, 2) }],
+            };
+        }
+        case "search_projects": {
+            const args = types.SearchProjectsSchema.parse(request.params.arguments);
+            const projects = await project.searchProjectsFunc(args.organizationId, args.name ?? undefined, args.status ?? undefined, args.createdAfter ?? undefined, args.createdBefore ?? undefined, args.creator ?? undefined, args.adminUserId ?? undefined, args.logicalStatus ?? undefined, args.advancedConditions ?? undefined, args.extraConditions ?? undefined, args.orderBy, args.page, args.perPage, args.sort, args.scenarioFilter ?? undefined, args.userId ?? undefined);
+            return {
+                content: [{ type: "text", text: JSON.stringify(projects, null, 2) }],
+            };
+        }
+        case "search_programs": {
+            const args = types.SearchProgramsSchema.parse(request.params.arguments);
+            const programs = await project.searchProgramsFunc(args.organizationId, args.name ?? undefined, args.status ?? undefined, args.gmtCreateStart ?? undefined, args.gmtCreateEnd ?? undefined, args.creator ?? undefined, args.users ?? undefined, args.orderBy, args.page, args.perPage, args.sort);
+            return {
+                content: [{ type: "text", text: JSON.stringify(programs, null, 2) }],
+            };
+        }
+        // Version Operations
+        case "list_program_versions": {
+            const args = types.ListProgramVersionsSchema.parse(request.params.arguments);
+            const versions = await version.listProgramVersionsFunc(args.organizationId, args.id, args.status ?? undefined, args.name ?? undefined, args.page, args.perPage);
+            return {
+                content: [{ type: "text", text: JSON.stringify(versions, null, 2) }],
+            };
+        }
+        case "list_versions": {
+            const args = types.ListVersionsSchema.parse(request.params.arguments);
+            const versions = await version.listVersionsFunc(args.organizationId, args.id, args.status ?? undefined, args.name ?? undefined, args.page, args.perPage);
+            return {
+                content: [{ type: "text", text: JSON.stringify(versions, null, 2) }],
+            };
+        }
+        case "create_version": {
+            const args = types.CreateVersionSchema.parse(request.params.arguments);
+            const result = await version.createVersionFunc(args.organizationId, args.id, args.name, args.owners, args.startDate ?? undefined, args.publishDate ?? undefined);
+            return {
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+            };
+        }
+        case "update_version": {
+            const args = types.UpdateVersionSchema.parse(request.params.arguments);
+            await version.updateVersionFunc(args.organizationId, args.projectId, args.id, args.name, args.owners ?? undefined, args.startDate ?? undefined, args.publishDate ?? undefined);
+            return {
+                content: [{ type: "text", text: JSON.stringify({ success: true, message: "Version updated successfully" }, null, 2) }],
+            };
+        }
+        case "delete_version": {
+            const args = types.DeleteVersionSchema.parse(request.params.arguments);
+            await version.deleteVersionFunc(args.organizationId, args.projectId, args.id);
+            return {
+                content: [{ type: "text", text: JSON.stringify({ success: true, message: "Version deleted successfully" }, null, 2) }],
+            };
+        }
+        // Sprint Operations
+        case "get_sprint": {
+            const args = types.GetSprintSchema.parse(request.params.arguments);
+            const sprintInfo = await sprint.getSprintFunc(args.organizationId, args.projectId, args.id);
+            return {
+                content: [{ type: "text", text: JSON.stringify(sprintInfo, null, 2) }],
+            };
+        }
+        case "list_sprints": {
+            const args = types.ListSprintsSchema.parse(request.params.arguments);
+            const sprints = await sprint.listSprintsFunc(args.organizationId, args.id, args.status, args.page, args.perPage);
+            return {
+                content: [{ type: "text", text: JSON.stringify(sprints, null, 2) }],
+            };
+        }
+        case "create_sprint": {
+            const args = types.CreateSprintSchema.parse(request.params.arguments);
+            const sprintResult = await sprint.createSprintFunc(args.organizationId, args.projectId, args.name, args.owners, args.startDate, args.endDate, args.description, args.capacityHours);
+            return {
+                content: [{ type: "text", text: JSON.stringify(sprintResult, null, 2) }],
+            };
+        }
+        case "update_sprint": {
+            const args = types.UpdateSprintSchema.parse(request.params.arguments);
+            await sprint.updateSprintFunc(args.organizationId, args.projectId, args.id, args.name, args.owners, args.startDate, args.endDate, args.description, args.capacityHours);
+            return {
+                content: [{ type: "text", text: "Sprint updated successfully" }],
+            };
+        }
+        // Work Item Operations
+        case "get_work_item": {
+            const args = types.GetWorkItemSchema.parse(request.params.arguments);
+            const workItemInfo = await workitem.getWorkItemFunc(args.organizationId, args.workItemId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemInfo, null, 2) }],
+            };
+        }
+        case "create_work_item": {
+            const args = types.CreateWorkItemSchema.parse(request.params.arguments);
+            const workItemInfo = await workitem.createWorkItemFunc(args.organizationId, args.assignedTo, args.spaceId, args.subject, args.workitemTypeId, args.customFieldValues, args.description, args.formatType ?? undefined, args.labels, args.parentId, args.participants, args.sprint, args.trackers, args.verifier, args.versions);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemInfo, null, 2) }],
+            };
+        }
+        case "search_workitems": {
+            const args = types.SearchWorkitemsSchema.parse(request.params.arguments);
+            const result = await workitem.searchWorkitemsFunc(args.organizationId, args.category, args.spaceId, args.spaceType ?? undefined, args.subject ?? undefined, args.status ?? undefined, args.createdAfter ?? undefined, args.createdBefore ?? undefined, args.updatedAfter ?? undefined, args.updatedBefore ?? undefined, args.creator ?? undefined, args.assignedTo ?? undefined, args.sprint ?? undefined, args.workitemType ?? undefined, args.statusStage ?? undefined, args.tag ?? undefined, args.priority ?? undefined, args.subjectDescription ?? undefined, args.finishTimeAfter ?? undefined, args.finishTimeBefore ?? undefined, args.updateStatusAtAfter ?? undefined, args.updateStatusAtBefore ?? undefined, args.advancedConditions ?? undefined, args.orderBy ?? "gmtCreate", args.sort ?? "desc", args.page, args.perPage, args.includeDetails ?? false);
+            return {
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+            };
+        }
+        case "list_my_pending_items": {
+            const args = types.ListMyPendingItemsSchema.parse(request.params.arguments);
+            const result = await workitem.listMyPendingItemsFunc(args.organizationId, args.spaceId ?? undefined, args.assignedTo ?? undefined);
+            // 格式化输出
+            let summary = "📋 我的待处理工作项\n\n";
+            for (const [cat, data] of Object.entries(result)) {
+                const catName = { Req: "需求", Task: "任务", Bug: "缺陷" }[cat] || cat;
+                if (data.error) {
+                    summary += `【${catName}】查询失败: ${data.error}\n`;
+                }
+                else {
+                    summary += `【${catName}】共 ${data.total} 项\n`;
+                    if (data.items.length > 0) {
+                        for (const item of data.items) {
+                            summary += `  • ${item.serialNumber} | ${item.status} | ${item.subject} | ${item.space ? '📁' + item.space : ''} | ${item.priority ? '⬆️' + item.priority : ''}\n`;
+                        }
+                        if (data.total > data.items.length) {
+                            summary += `  ... 还有 ${data.total - data.items.length} 项\n`;
+                        }
+                    }
+                    else {
+                        summary += `  （无）\n`;
+                    }
+                }
+                summary += "\n";
+            }
+            return {
+                content: [{ type: "text", text: summary }],
+            };
+        }
+        case "get_work_item_types": {
+            const args = z.object({
+                organizationId: z.string().describe("organization id"),
+                id: z.string().describe("project id or space id"),
+                category: z.string().describe("Req、Task、Bug etc.")
+            }).parse(request.params.arguments);
+            const workItemTypes = await workitem.getWorkItemTypesFunc(args.organizationId, args.id, args.category);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemTypes, null, 2) }],
+            };
+        }
+        case "update_work_item": {
+            const args = types.UpdateWorkItemSchema.parse(request.params.arguments);
+            await workitem.updateWorkItemFunc(args.organizationId, args.workItemId, args.updateWorkItemFields);
+            return {
+                content: [{ type: "text", text: JSON.stringify({ success: true, message: "Work item updated successfully" }, null, 2) }],
+            };
+        }
+        // Work Item Type Operations
+        case "list_all_work_item_types": {
+            const args = types.ListAllWorkItemTypesSchema.parse(request.params.arguments);
+            const workItemTypes = await workitem.listAllWorkItemTypesFunc(args.organizationId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemTypes, null, 2) }],
+            };
+        }
+        case "list_work_item_types": {
+            const args = types.ListWorkItemTypesSchema.parse(request.params.arguments);
+            const workItemTypes = await workitem.listWorkItemTypesFunc(args.organizationId, args.projectId, args.category);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemTypes, null, 2) }],
+            };
+        }
+        case "get_work_item_type": {
+            const args = types.GetWorkItemTypeSchema.parse(request.params.arguments);
+            const workItemType = await workitem.getWorkItemTypeFunc(args.organizationId, args.id);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemType, null, 2) }],
+            };
+        }
+        case "list_work_item_relation_work_item_types": {
+            const args = types.ListWorkItemRelationWorkItemTypesSchema.parse(request.params.arguments);
+            const workItemTypes = await workitem.listWorkItemRelationWorkItemTypesFunc(args.organizationId, args.workItemTypeId, args.relationType);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workItemTypes, null, 2) }],
+            };
+        }
+        case "list_work_item_relation_records": {
+            const args = types.ListWorkItemRelationRecordsSchema.parse(request.params.arguments);
+            const records = await workitem.listWorkItemRelationRecordsFunc(args.organizationId, args.workItemId, args.relationType);
+            return {
+                content: [{ type: "text", text: JSON.stringify(records, null, 2) }],
+            };
+        }
+        case "create_work_item_relation_record": {
+            const args = types.CreateWorkItemRelationRecordSchema.parse(request.params.arguments);
+            const record = await workitem.createWorkItemRelationRecordFunc(args.organizationId, args.workItemId, args.relatedWorkItemId, args.relationType, args.operatorId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(record, null, 2) }],
+            };
+        }
+        case "delete_work_item_relation_record": {
+            const args = types.DeleteWorkItemRelationRecordSchema.parse(request.params.arguments);
+            const result = await workitem.deleteWorkItemRelationRecordFunc(args.organizationId, args.workItemId, args.relatedWorkItemId, args.relationType, args.operatorId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(result ?? { success: true }, null, 2) }],
+            };
+        }
+        case "get_work_item_type_field_config": {
+            const args = types.GetWorkItemTypeFieldConfigSchema.parse(request.params.arguments);
+            const fieldConfig = await workitem.getWorkItemTypeFieldConfigFunc(args.organizationId, args.projectId, args.workItemTypeId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(fieldConfig, null, 2) }],
+            };
+        }
+        case "get_work_item_workflow": {
+            const args = types.GetWorkItemWorkflowSchema.parse(request.params.arguments);
+            const workflow = await workitem.getWorkItemWorkflowFunc(args.organizationId, args.projectId, args.workItemTypeId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(workflow, null, 2) }],
+            };
+        }
+        case "list_work_item_comments": {
+            const args = types.ListWorkItemCommentsSchema.parse(request.params.arguments);
+            const comments = await workitem.listWorkItemCommentsFunc(args.organizationId, args.workItemId, args.page, args.perPage);
+            return {
+                content: [{ type: "text", text: JSON.stringify(comments, null, 2) }],
+            };
+        }
+        case "create_work_item_comment": {
+            const args = types.CreateWorkItemCommentSchema.parse(request.params.arguments);
+            const comment = await workitem.createWorkItemCommentFunc(args.organizationId, args.workItemId, args.content);
+            return {
+                content: [{ type: "text", text: JSON.stringify(comment, null, 2) }],
+            };
+        }
+        // Attachment Operations
+        case "list_workitem_attachments": {
+            const args = types.ListWorkitemAttachmentsSchema.parse(request.params.arguments);
+            const attachments = await attachment.listWorkitemAttachmentsFunc(args.organizationId, args.workItemId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(attachments, null, 2) }],
+            };
+        }
+        case "get_workitem_file": {
+            const args = types.GetWorkitemFileSchema.parse(request.params.arguments);
+            const file = await attachment.getWorkitemFileFunc(args.organizationId, args.workitemId, args.id);
+            return {
+                content: [{ type: "text", text: JSON.stringify(file, null, 2) }],
+            };
+        }
+        case "create_workitem_attachment": {
+            const args = types.CreateWorkitemAttachmentSchema.parse(request.params.arguments);
+            const result = await attachment.createWorkitemAttachmentFunc(args.organizationId, args.workItemId, args.filePath, args.operatorId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+            };
+        }
+        default:
+            return null;
+    }
+};
