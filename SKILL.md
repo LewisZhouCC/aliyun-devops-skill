@@ -1,6 +1,6 @@
 ---
 name: aliyun-devops
-description: 阿里云云效 DevOps 平台集成技能。提供代码管理、流水线、项目管理、组织管理、制品仓库、应用交付、测试管理等完整 DevOps 能力。当用户需要与云效平台交互时使用，包括：(1) 代码仓库操作（分支、文件、合并请求）(2) 流水线创建和运行 (3) 项目和工作项管理 (4) 组织成员管理 (5) 制品仓库查询 (6) 应用部署和发布 (7) 测试用例管理。触发词：云效、Codeup、Flow、Projex、AppStack、DevOps。
+description: 当用户需要查询或操作阿里云云效 DevOps / Yunxiao 资源时使用，包括 Codeup 代码仓库、Flow 流水线、Projex 项目/工作项、AppStack 应用交付、制品仓库、测试管理、组织成员等。适用于用户提供 devops.aliyun.com 链接，或提到云效、Yunxiao、Codeup、Flow、Projex、AppStack、pipeline、流水线、合并请求、工作项、项目、发布单、部署单、测试用例等场景。不要用于普通阿里云 ECS/OSS/RDS/Kubernetes 问题，除非问题明确关联云效 DevOps。
 ---
 
 # 阿里云 DevOps 技能
