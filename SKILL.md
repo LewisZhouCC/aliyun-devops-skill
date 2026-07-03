@@ -14,14 +14,9 @@ export YUNXIAO_ACCESS_TOKEN="<token>"
 # 可选：仅私有化/region 站点需要覆盖
 export YUNXIAO_API_BASE_URL="https://openapi-rdc.aliyuncs.com"
 export YUNXIAO_REGION_DEFAULT_ORG_ID="default"
-# 可选：本地保存常用资源 ID，避免写进仓库或聊天记录
-export YUNXIAO_ORGANIZATION_ID="<organization-id>"
-export YUNXIAO_PROJECT_ID="<project-id>"
-export YUNXIAO_REPOSITORY_ID="<repository-id>"
-export YUNXIAO_ASSIGNEE_ID="<user-id>"
 ```
 
-**重要**: 通过环境变量传入令牌和站点配置，不要把 token、组织 ID、用户 ID、项目 ID 或仓库 ID 写入 skill、仓库、issue、日志或聊天记录。
+**重要**: 环境变量只用于身份认证和运行环境配置。组织 ID、项目 ID、流水线 ID、仓库 ID、负责人 ID 等资源参数应来自用户请求、云效链接、CLI 查询结果或临时参数文件，不要作为全局环境变量固定下来。
 
 获取令牌：云效控制台 → 个人设置 → 个人访问令牌
 
