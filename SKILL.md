@@ -24,35 +24,44 @@ export YUNXIAO_REGION_DEFAULT_ORG_ID="default"
 
 **在查阅 references 文档之前，必须优先使用 CLI 帮助命令！**
 
-CLI 位置：`scripts/yunxiao-cli/index.mjs`
+CLI 位置：
+
+- Claude Code：`${CLAUDE_SKILL_DIR}/scripts/yunxiao-cli/index.mjs`
+- Codex：`${CODEX_HOME:-$HOME/.codex}/skills/aliyun-devops/scripts/yunxiao-cli/index.mjs`
+
+示例命令里先设置一个兼容变量：
+
+```bash
+ALIYUN_DEVOPS_SKILL_DIR="${CLAUDE_SKILL_DIR:-${CODEX_HOME:-$HOME/.codex}/skills/aliyun-devops}"
+```
 
 ### 快速查询命令
 
 ```bash
 # 查看帮助
-node scripts/yunxiao-cli/index.mjs --help
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" --help
 
 # 列出所有工具
-node scripts/yunxiao-cli/index.mjs list
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" list
 
 # 按类别筛选 (base/code/org/project/pipeline/packages/appstack/test)
-node scripts/yunxiao-cli/index.mjs list --category=pipeline
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" list --category=pipeline
 
 # 搜索工具
-node scripts/yunxiao-cli/index.mjs search branch
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" search branch
 
 # 查看工具详情（包含完整参数说明）
-node scripts/yunxiao-cli/index.mjs tool create_branch
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" tool create_branch
 ```
 
 ### 调用工具
 
 ```bash
 # 调用工具（使用完整的 MCP 业务逻辑）
-node scripts/yunxiao-cli/index.mjs call get_current_organization_info
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call get_current_organization_info
 
 # 带参数调用
-node scripts/yunxiao-cli/index.mjs call create_branch '{"organizationId":"<organization-id>","repositoryId":"<repository-id>","branch":"feature/new"}'
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call create_branch '{"organizationId":"<organization-id>","repositoryId":"<repository-id>","branch":"feature/new"}'
 
 # 复杂 JSON/Markdown 参数建议写入文件后再调用，避免 shell 引号转义问题
 cat >/tmp/workitem.json <<'EOF'
@@ -65,12 +74,12 @@ cat >/tmp/workitem.json <<'EOF'
   "description": "## 背景\n\n多行 Markdown 直接塞 shell 很容易炸引号。"
 }
 EOF
-node scripts/yunxiao-cli/index.mjs call create_work_item @/tmp/workitem.json
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call create_work_item @/tmp/workitem.json
 
 # 直接调用 API
-node scripts/yunxiao-cli/index.mjs api GET /oapi/v1/organization/current
-node scripts/yunxiao-cli/index.mjs api POST /endpoint --data '{"key":"value"}'
-node scripts/yunxiao-cli/index.mjs api POST /endpoint --data @/tmp/payload.json
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" api GET /oapi/v1/organization/current
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" api POST /endpoint --data '{"key":"value"}'
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" api POST /endpoint --data @/tmp/payload.json
 
 # 从 Projex 项目链接直接创建工作项（推荐用于 issue / task）
 cat >/tmp/workitem.json <<'EOF'
@@ -82,8 +91,8 @@ cat >/tmp/workitem.json <<'EOF'
   "description": "## 背景\n\n这里写多行 Markdown。"
 }
 EOF
-node scripts/yunxiao-cli/index.mjs create-work-item --dry-run https://devops.aliyun.com/projex/project/<project-id> @/tmp/workitem.json
-node scripts/yunxiao-cli/index.mjs create-work-item https://devops.aliyun.com/projex/project/<project-id> @/tmp/workitem.json
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item --dry-run https://devops.aliyun.com/projex/project/<project-id> @/tmp/workitem.json
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item https://devops.aliyun.com/projex/project/<project-id> @/tmp/workitem.json
 ```
 
 ## 查询流程
@@ -151,14 +160,14 @@ node scripts/yunxiao-cli/index.mjs create-work-item https://devops.aliyun.com/pr
    - 已验证：通过官方 relationRecords API 创建 `PARENT` 关系后，子工作项的 `parentId` 和 `idPath` 会更新
 
 ```bash
-node scripts/yunxiao-cli/index.mjs call create_work_item_relation_record '{
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call create_work_item_relation_record '{
   "organizationId": "<organization-id>",
   "workItemId": "child-work-item-id",
   "relatedWorkItemId": "parent-work-item-id",
   "relationType": "PARENT"
 }'
 
-node scripts/yunxiao-cli/index.mjs call list_work_item_relation_records '{
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call list_work_item_relation_records '{
   "organizationId": "<organization-id>",
   "workItemId": "child-work-item-id",
   "relationType": "PARENT"

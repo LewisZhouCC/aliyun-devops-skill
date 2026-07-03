@@ -1,6 +1,6 @@
 # Aliyun DevOps Skill
 
-Codex skill for operating Alibaba Cloud Yunxiao DevOps resources through a bundled CLI.
+Codex and Claude Code skill for operating Alibaba Cloud Yunxiao DevOps resources through a bundled CLI.
 
 ## Setup
 
@@ -10,6 +10,20 @@ Install from GitHub:
 git clone https://github.com/cocovs/aliyun-devops-skill.git
 cd aliyun-devops-skill
 scripts/install.sh
+```
+
+By default this installs to both personal skill directories:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/skills/aliyun-devops
+${CLAUDE_HOME:-$HOME/.claude}/skills/aliyun-devops
+```
+
+To install only one target:
+
+```bash
+scripts/install.sh --target codex
+scripts/install.sh --target claude
 ```
 
 To also write the required environment variables to `~/.zshrc`:
@@ -47,3 +61,5 @@ export YUNXIAO_DEBUG=0
 See [SKILL.md](SKILL.md) for agent instructions and CLI examples.
 
 Trigger the skill with `$aliyun-devops`.
+
+In Claude Code, invoke it with `/aliyun-devops`.

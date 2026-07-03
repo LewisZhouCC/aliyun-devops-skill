@@ -4,18 +4,21 @@ set -euo pipefail
 repo_url="https://github.com/cocovs/aliyun-devops-skill.git"
 skill_name="aliyun-devops"
 codex_home="${CODEX_HOME:-$HOME/.codex}"
-target_dir="$codex_home/skills/$skill_name"
+claude_home="${CLAUDE_HOME:-$HOME/.claude}"
+install_target="both"
 write_zshrc=0
 zshrc_file="${ZDOTDIR:-$HOME}/.zshrc"
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/install.sh [--zshrc]
+Usage: scripts/install.sh [--target codex|claude|both] [--zshrc]
 
-Installs the Aliyun DevOps skill to:
-  ${CODEX_HOME:-$HOME/.codex}/skills/aliyun-devops
+Installs the Aliyun DevOps skill to one or both personal skill directories:
+  Codex:       ${CODEX_HOME:-$HOME/.codex}/skills/aliyun-devops
+  Claude Code: ${CLAUDE_HOME:-$HOME/.claude}/skills/aliyun-devops
 
 Options:
+  --target   Install target. Defaults to both.
   --zshrc   Add or update a managed environment variable block in ~/.zshrc.
   -h, --help
             Show this help.
@@ -29,6 +32,14 @@ USAGE
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --target)
+      install_target="${2:-}"
+      if [[ "$install_target" != "codex" && "$install_target" != "claude" && "$install_target" != "both" ]]; then
+        echo "--target must be one of: codex, claude, both" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
     --zshrc)
       write_zshrc=1
       shift
@@ -45,16 +56,31 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-mkdir -p "$codex_home/skills"
+install_one() {
+  local root="$1"
+  local label="$2"
+  local target_dir="$root/skills/$skill_name"
 
-if [[ -d "$target_dir/.git" ]]; then
-  git -C "$target_dir" pull --ff-only
-else
-  rm -rf "$target_dir"
-  git clone "$repo_url" "$target_dir"
+  mkdir -p "$root/skills"
+
+  if [[ -d "$target_dir/.git" ]]; then
+    git -C "$target_dir" pull --ff-only
+  else
+    rm -rf "$target_dir"
+    git clone "$repo_url" "$target_dir"
+  fi
+
+  npm --prefix "$target_dir/scripts/yunxiao-cli" install
+  echo "Installed $skill_name for $label to $target_dir"
+}
+
+if [[ "$install_target" == "codex" || "$install_target" == "both" ]]; then
+  install_one "$codex_home" "Codex"
 fi
 
-npm --prefix "$target_dir/scripts/yunxiao-cli" install
+if [[ "$install_target" == "claude" || "$install_target" == "both" ]]; then
+  install_one "$claude_home" "Claude Code"
+fi
 
 if [[ "$write_zshrc" -eq 1 ]]; then
   start_marker="# >>> aliyun-devops-skill"
@@ -81,5 +107,6 @@ EOF
   echo "Updated $zshrc_file"
 fi
 
-echo "Installed $skill_name to $target_dir"
-echo "Restart Codex or start a new shell session before using \$aliyun-devops."
+echo "Restart Codex/Claude Code or start a new shell session before using the skill."
+echo "Codex trigger: \$aliyun-devops"
+echo "Claude Code trigger: /aliyun-devops"
