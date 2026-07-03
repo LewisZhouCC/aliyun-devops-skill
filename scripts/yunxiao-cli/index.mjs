@@ -148,6 +148,34 @@ function parseDevopsResource(input) {
   }
 
   const path = url.pathname.replace(/\/+$/, '');
+  const flowCurrent = path.match(/^\/pipelines\/([^/]+)\/current$/i);
+  if (url.hostname === 'flow.aliyun.com' && flowCurrent) {
+    return {
+      kind: 'flow-pipeline-current-run',
+      module: '流水线',
+      tool: 'get_latest_pipeline_run',
+      label: 'Flow 流水线最近运行',
+      args: ({ organizationId }) => ({
+        organizationId,
+        pipelineId: decodeURIComponent(flowCurrent[1])
+      })
+    };
+  }
+
+  const flowPipeline = path.match(/^\/pipelines\/([^/]+)$/i);
+  if (url.hostname === 'flow.aliyun.com' && flowPipeline) {
+    return {
+      kind: 'flow-pipeline',
+      module: '流水线',
+      tool: 'get_pipeline',
+      label: 'Flow 流水线',
+      args: ({ organizationId }) => ({
+        organizationId,
+        pipelineId: decodeURIComponent(flowPipeline[1])
+      })
+    };
+  }
+
   const projexProject = path.match(/\/projex\/project\/([^/]+)$/);
   if (projexProject) {
     return {
