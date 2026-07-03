@@ -20,9 +20,11 @@ Options:
   -h, --help
             Show this help.
 
-Before using --zshrc, optionally export real local values in the current shell:
+Before using --zshrc, export real local values in the current shell when available:
   export YUNXIAO_ACCESS_TOKEN="<token>"
   export YUNXIAO_ORGANIZATION_ID="<organization-id>"
+
+Unset values are written as empty strings, not placeholders.
 USAGE
 }
 
@@ -69,18 +71,18 @@ if [[ "$write_zshrc" -eq 1 ]]; then
 
   cat >> "$tmp_file" <<EOF
 $start_marker
-export YUNXIAO_ACCESS_TOKEN="${YUNXIAO_ACCESS_TOKEN:-<token>}"
+export YUNXIAO_ACCESS_TOKEN="${YUNXIAO_ACCESS_TOKEN:-}"
 export YUNXIAO_API_BASE_URL="${YUNXIAO_API_BASE_URL:-https://openapi-rdc.aliyuncs.com}"
 export YUNXIAO_REGION_DEFAULT_ORG_ID="${YUNXIAO_REGION_DEFAULT_ORG_ID:-default}"
 export YUNXIAO_DEBUG="${YUNXIAO_DEBUG:-0}"
 
-# Optional resource identifiers. Replace placeholders locally when needed.
-export YUNXIAO_ORGANIZATION_ID="${YUNXIAO_ORGANIZATION_ID:-<organization-id>}"
-export YUNXIAO_PROJECT_ID="${YUNXIAO_PROJECT_ID:-<project-id>}"
-export YUNXIAO_SPACE_ID="${YUNXIAO_SPACE_ID:-<space-id>}"
-export YUNXIAO_REPOSITORY_ID="${YUNXIAO_REPOSITORY_ID:-<repository-id>}"
-export YUNXIAO_PIPELINE_ID="${YUNXIAO_PIPELINE_ID:-<pipeline-id>}"
-export YUNXIAO_ASSIGNEE_ID="${YUNXIAO_ASSIGNEE_ID:-<user-id>}"
+# Optional resource identifiers. Empty values mean they are not configured.
+export YUNXIAO_ORGANIZATION_ID="${YUNXIAO_ORGANIZATION_ID:-}"
+export YUNXIAO_PROJECT_ID="${YUNXIAO_PROJECT_ID:-}"
+export YUNXIAO_SPACE_ID="${YUNXIAO_SPACE_ID:-}"
+export YUNXIAO_REPOSITORY_ID="${YUNXIAO_REPOSITORY_ID:-}"
+export YUNXIAO_PIPELINE_ID="${YUNXIAO_PIPELINE_ID:-}"
+export YUNXIAO_ASSIGNEE_ID="${YUNXIAO_ASSIGNEE_ID:-}"
 $end_marker
 EOF
 

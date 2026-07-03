@@ -20,6 +20,8 @@ scripts/install.sh --zshrc
 source ~/.zshrc
 ```
 
+Unset optional IDs are written as empty strings, not placeholder values.
+
 The installer writes a managed block between:
 
 ```text
@@ -34,13 +36,13 @@ export YUNXIAO_API_BASE_URL="https://openapi-rdc.aliyuncs.com"
 export YUNXIAO_REGION_DEFAULT_ORG_ID="default"
 export YUNXIAO_DEBUG=0
 
-# Store real resource identifiers locally instead of hard-coding them in docs or scripts.
-export YUNXIAO_ORGANIZATION_ID="<organization-id>"
-export YUNXIAO_PROJECT_ID="<project-id>"
-export YUNXIAO_SPACE_ID="<space-id>"
-export YUNXIAO_REPOSITORY_ID="<repository-id>"
-export YUNXIAO_PIPELINE_ID="<pipeline-id>"
-export YUNXIAO_ASSIGNEE_ID="<user-id>"
+# Fill only when you know the real IDs. Empty means "not configured".
+export YUNXIAO_ORGANIZATION_ID=""
+export YUNXIAO_PROJECT_ID=""
+export YUNXIAO_SPACE_ID=""
+export YUNXIAO_REPOSITORY_ID=""
+export YUNXIAO_PIPELINE_ID=""
+export YUNXIAO_ASSIGNEE_ID=""
 ```
 
 ## Security
