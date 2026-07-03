@@ -4,22 +4,27 @@ Codex skill for operating Alibaba Cloud Yunxiao DevOps resources through a bundl
 
 ## Setup
 
-Install this folder as a Codex skill by placing it under your skills directory, for example:
+Install from GitHub:
 
 ```bash
-mkdir -p ~/.codex/skills
-cp -R aliyun-devops-skill ~/.codex/skills/aliyun-devops
+git clone https://github.com/cocovs/aliyun-devops-skill.git
+cd aliyun-devops-skill
+scripts/install.sh
 ```
 
-Install CLI dependencies:
+To also write the required environment variables to `~/.zshrc`:
 
 ```bash
-cd scripts/yunxiao-cli
-npm install
-cd ../..
-
 export YUNXIAO_ACCESS_TOKEN="<token>"
-node scripts/yunxiao-cli/index.mjs --help
+scripts/install.sh --zshrc
+source ~/.zshrc
+```
+
+The installer writes a managed block between:
+
+```text
+# >>> aliyun-devops-skill
+# <<< aliyun-devops-skill
 ```
 
 Optional environment variables:
