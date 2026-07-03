@@ -225,6 +225,20 @@ function printAliasGuide(keyword) {
   }
 }
 
+function redactResourceArgs(value, keyName = '') {
+  const sensitiveKey = /(^id$|Id$|ID$|organizationId|projectId|spaceId|repositoryId|pipelineId|workItemId|relatedWorkItemId|assigneeId|assignedTo)/.test(keyName);
+  if (sensitiveKey && value !== undefined && value !== null && value !== '') {
+    return '<redacted>';
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => redactResourceArgs(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, redactResourceArgs(nested, key)]));
+  }
+  return value;
+}
+
 async function executeTool(toolName, args) {
   const request = {
     params: {
@@ -449,7 +463,7 @@ async function cmdInspect(input) {
     console.log(`识别结果: ${resource.label}`);
     console.log(`归属模块: ${resource.module}`);
     console.log(`推荐工具: ${resource.tool}`);
-    console.log(`调用参数: ${JSON.stringify(args, null, 2)}\n`);
+    console.log(`调用参数: ${JSON.stringify(redactResourceArgs(args), null, 2)}\n`);
     if (dryRun) {
       console.log('dry-run 模式：仅展示路由结果和推荐调用参数，未实际请求云效 API。');
       return;
