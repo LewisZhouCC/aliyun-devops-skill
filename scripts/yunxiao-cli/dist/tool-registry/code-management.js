@@ -83,7 +83,7 @@ export const getCodeManagementTools = () => [
     },
     {
         name: "create_change_request",
-        description: "[Code Management] Create a new change request (merge request). Supports specifying source/target branches, reviewers, associated work items, and optional AI review trigger.",
+        description: "[Code Management] Create a new change request (merge request). COMMAND_LINE requests must include sourceCommitId. Creating a change request does not authorize merging it.",
         inputSchema: zodToJsonSchema(types.CreateChangeRequestSchema),
     },
     {

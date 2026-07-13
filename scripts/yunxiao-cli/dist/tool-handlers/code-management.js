@@ -111,7 +111,7 @@ export const handleCodeManagementTools = async (request) => {
         }
         case "create_change_request": {
             const args = types.CreateChangeRequestSchema.parse(request.params.arguments);
-            const changeRequest = await changeRequests.createChangeRequestFunc(args.organizationId, args.repositoryId, args.title, args.sourceBranch, args.targetBranch, args.description ?? undefined, args.sourceProjectId, args.targetProjectId, args.reviewerUserIds ?? undefined, args.workItemIds ?? undefined, args.createFrom, args.triggerAIReviewRun ?? false);
+            const changeRequest = await changeRequests.createChangeRequestFunc(args.organizationId, args.repositoryId, args.title, args.sourceBranch, args.targetBranch, args.description ?? undefined, args.sourceProjectId, args.targetProjectId, args.reviewerUserIds ?? undefined, args.workItemIds ?? undefined, args.createFrom, args.triggerAIReviewRun ?? false, args.sourceCommitId);
             return {
                 content: [{ type: "text", text: JSON.stringify(changeRequest, null, 2) }],
             };

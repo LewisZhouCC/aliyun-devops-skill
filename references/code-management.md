@@ -107,9 +107,45 @@ POST /oapi/v1/codeup/organizations/{organizationId}/repositories/{repositoryId}/
   "targetBranch": "master",
   "title": "合并请求标题",
   "description": "描述",
-  "reviewerIds": ["user1", "user2"]
+  "reviewerUserIds": ["user1", "user2"],
+  "createFrom": "WEB"
 }
 ```
+
+`createFrom` 默认使用 `WEB`。如果必须使用 `COMMAND_LINE`，云效还要求提供源提交 ID：
+
+```json
+{
+  "sourceBranch": "feature-branch",
+  "targetBranch": "master",
+  "title": "合并请求标题",
+  "createFrom": "COMMAND_LINE",
+  "sourceCommitId": "<full-source-commit-id>"
+}
+```
+
+先通过 `get_branch` 获取 `sourceBranch` 当前完整 commit ID。缺少
+`sourceCommitId` 时 CLI 会在请求发出前拒绝参数，避免平台返回
+`source commit can not be null`。
+
+### 合并与撤回边界
+
+- 创建 MR 不代表授权合并。只有用户明确要求合并当前 MR 时才执行。
+- 合并前重新查询 MR，检查目标分支、源提交、冲突状态和卡点状态。
+- 已合并 MR 默认通过“revert 分支 + 新 MR”撤回，不直接改写目标分支历史。
+- 只有用户明确要求强制撤回，并且确认待撤回提交之后没有其他提交时，才允许使用精确 lease：
+
+```bash
+git fetch origin
+git log --format='%H %an %s' <parent>..origin/<target-branch>
+git push \
+  --force-with-lease=refs/heads/<target-branch>:<expected-current-sha> \
+  origin \
+  <parent>:refs/heads/<target-branch>
+```
+
+如果远端目标分支已经变化，`--force-with-lease` 必须失败；不要改用无 lease 的
+`--force` 绕过保护。
 
 ### 获取合并请求
 ```
