@@ -324,7 +324,16 @@ export const CreateChangeRequestSchema = z.object({
     reviewerUserIds: z.array(z.string()).nullable().optional().describe("评审人用户ID列表。示例：['62c795xxxb468af8'] 或 ['62c795xxxb468af8', '62c795xxxb468af9']"),
     workItemIds: z.string().optional().describe("关联工作项ID列表，以字符串形式逗号分隔。示例值：722200214032b6b31e6f1434ab,xxx"),
     createFrom: z.enum(["WEB", "COMMAND_LINE"]).optional().default("WEB").describe("创建来源。WEB - 页面创建；COMMAND_LINE - 命令行创建。默认为WEB"),
+    sourceCommitId: z.string().min(1).optional().describe("源提交ID。createFrom=COMMAND_LINE 时必填，必须是 sourceBranch 当前要提交评审的完整 commit ID"),
     triggerAIReviewRun: z.boolean().optional().default(false).describe("是否触发AI评审。true - 触发AI评审；false - 不触发（默认）"),
+}).superRefine((value, ctx) => {
+    if (value.createFrom === "COMMAND_LINE" && !value.sourceCommitId) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["sourceCommitId"],
+            message: "sourceCommitId is required when createFrom=COMMAND_LINE",
+        });
+    }
 });
 export const ListChangeRequestPatchSetsSchema = z.object({
     organizationId: z.string().describe("组织ID，可在组织管理后台的基本信息页面获取。示例：'<organization-id>'"),

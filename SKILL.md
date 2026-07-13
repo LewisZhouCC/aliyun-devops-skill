@@ -128,6 +128,19 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item h
 如果链接明确，优先按链接路由，而不是按用户口头提到的产品名路由。
 当前 CLI 已提供 `inspect` 子命令；需要快速判断链接归属时，优先使用 `inspect`，再配合 `search` / `tool` 查具体工具。
 
+## Codeup MR 安全规则
+
+1. 创建 MR 默认使用 `createFrom=WEB`。只有调用方明确需要命令行来源语义时才使用 `COMMAND_LINE`；此时先用 `get_branch` 读取源分支当前完整 commit ID，并作为 `sourceCommitId` 传给 `create_change_request`。缺少该字段时不要发送请求。
+2. “提交分支”“创建 MR”“提请审核”只授权创建 MR，不授权合并。即使目标是测试环境，也不能在创建成功后自动继续合并。
+3. 只有用户明确要求合并当前 MR 时才执行合并。合并前重新读取 MR，确认目标分支、源提交、冲突状态、卡点状态和远端目标分支最新提交，避免使用创建时的旧状态。
+4. 用户要求撤回时先区分状态：
+   - 尚未合并：关闭 MR 或删除源分支，不改写目标分支。
+   - 已经合并：默认从最新目标分支创建 revert 提交，再通过新的 MR 撤回，保留审计历史。
+   - 只有用户明确要求“强制撤回/改写历史”时，才考虑将目标分支回退到合并前提交。执行前必须证明目标分支在待撤回提交之后没有其他提交，并使用绑定当前远端 SHA 的 `--force-with-lease`；条件不满足立即停止。
+5. 创建、合并、revert、强制撤回是四个独立的外部状态变更。不要因为前一步获得授权而推断后续步骤也已获授权。
+
+详细参数与示例见 [references/code-management.md](references/code-management.md)。
+
 ## 工作项常见坑
 
 1. 下游同步或自动化系统可能只扫描部分工作项类型，例如 `Task` 和 `Bug`；但云效项目本身可能还支持 `Req`、`Online Fault` 等更多类型。不要默认所有类型都会被下游系统自动处理。

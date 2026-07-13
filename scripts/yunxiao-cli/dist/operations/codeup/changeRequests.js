@@ -148,10 +148,15 @@ export async function listChangeRequestPatchSetsFunc(organizationId, repositoryI
  * @param workItemIds 关联工作项ID列表（可选），以字符串形式逗号分隔。示例值：722200214032b6b31e6f1434ab,xxx
  * @param createFrom 创建来源，默认 'WEB'。可选值：'WEB' - 页面创建；'COMMAND_LINE' - 命令行创建
  * @param triggerAIReviewRun 是否触发AI评审，默认 false
+ * @param sourceCommitId 源提交ID；createFrom='COMMAND_LINE' 时必填
  */
 export async function createChangeRequestFunc(organizationId, repositoryId, title, sourceBranch, targetBranch, description, sourceProjectId, targetProjectId, reviewerUserIds, workItemIds, createFrom = "WEB", // Possible values: WEB, COMMAND_LINE
-triggerAIReviewRun = false // Whether to trigger AI review
+triggerAIReviewRun = false, // Whether to trigger AI review
+sourceCommitId
 ) {
+    if (createFrom === "COMMAND_LINE" && !sourceCommitId) {
+        throw new Error("sourceCommitId is required when createFrom=COMMAND_LINE");
+    }
     const finalOrgId = await resolveOrganizationId(organizationId);
     const encodedRepoId = handleRepositoryIdEncoding(repositoryId);
     // 检查和获取sourceProjectId和targetProjectId
@@ -221,6 +226,9 @@ triggerAIReviewRun = false // Whether to trigger AI review
     }
     if (triggerAIReviewRun !== undefined) {
         payload.triggerAIReviewRun = triggerAIReviewRun;
+    }
+    if (sourceCommitId !== undefined) {
+        payload.sourceCommitId = sourceCommitId;
     }
     const response = await yunxiaoRequest(url, {
         method: "POST",
