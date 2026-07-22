@@ -116,6 +116,13 @@ export const handleCodeManagementTools = async (request) => {
                 content: [{ type: "text", text: JSON.stringify(changeRequest, null, 2) }],
             };
         }
+        case "close_change_request": {
+            const args = types.CloseChangeRequestSchema.parse(request.params.arguments);
+            const result = await changeRequests.closeChangeRequestFunc(args.organizationId, args.repositoryId, args.localId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+            };
+        }
         case "create_change_request_comment": {
             const args = types.CreateChangeRequestCommentSchema.parse(request.params.arguments);
             const comment = await changeRequestComments.createChangeRequestCommentFunc(args.organizationId, args.repositoryId, args.localId, args.comment_type, args.content, args.draft, args.resolved, args.patchset_biz_id, args.file_path ?? undefined, args.line_number ?? undefined, args.from_patchset_biz_id ?? undefined, args.to_patchset_biz_id ?? undefined, args.parent_comment_biz_id ?? undefined);

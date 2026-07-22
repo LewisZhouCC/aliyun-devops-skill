@@ -87,6 +87,11 @@ export const getCodeManagementTools = () => [
         inputSchema: zodToJsonSchema(types.CreateChangeRequestSchema),
     },
     {
+        name: "close_change_request",
+        description: "[Code Management] Close an unmerged change request (merge request). This changes external state and requires explicit user authorization.",
+        inputSchema: zodToJsonSchema(types.CloseChangeRequestSchema),
+    },
+    {
         name: "create_change_request_comment",
         description: "[Code Management] Create a comment on a change request. Supports two types: GLOBAL_COMMENT (global comment on the entire merge request) and INLINE_COMMENT (inline comment on specific code lines). For INLINE_COMMENT, you must provide file_path, line_number, from_patchset_biz_id, and to_patchset_biz_id parameters.",
         inputSchema: zodToJsonSchema(types.CreateChangeRequestCommentSchema),

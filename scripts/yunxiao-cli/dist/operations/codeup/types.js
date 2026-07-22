@@ -335,6 +335,17 @@ export const CreateChangeRequestSchema = z.object({
         });
     }
 });
+export const CloseChangeRequestSchema = z.object({
+    organizationId: z.string().optional().default("default").describe("组织ID。中心版可显式传入；Region版可省略。"),
+    repositoryId: z.string().min(1).describe("代码库数字ID或者URL-Encoder编码的完整路径。未编码路径中的斜杠会自动编码。示例：'2835387' 或 '<organization-id>%2FDemoRepo'"),
+    localId: z.union([
+        z.string().regex(/^[1-9]\d*$/, "localId must be a positive integer"),
+        z.number().int().positive(),
+    ]).describe("合并请求局部ID，表示代码库中第几个合并请求。示例：1 或 '42'"),
+});
+export const CloseChangeRequestResponseSchema = z.object({
+    result: z.boolean().describe("是否成功关闭合并请求"),
+});
 export const ListChangeRequestPatchSetsSchema = z.object({
     organizationId: z.string().describe("组织ID，可在组织管理后台的基本信息页面获取。示例：'<organization-id>'"),
     repositoryId: z.string().describe("代码库ID或者URL-Encoder编码的全路径。示例：'2835387' 或 '<organization-id>%2FDemoRepo'（注意：斜杠需要URL编码为%2F）"),

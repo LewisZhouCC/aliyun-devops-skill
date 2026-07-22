@@ -5,7 +5,7 @@ description: 当用户需要查询或操作阿里云云效 DevOps / Yunxiao 资�
 
 # 阿里云 DevOps 技能
 
-本技能提供与阿里云云效平台交互的完整能力，包含 157 个工具。
+本技能提供与阿里云云效平台交互的完整能力，包含 174 个工具。
 
 ## 前置条件
 
@@ -62,6 +62,9 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call get_current_o
 
 # 带参数调用
 node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call create_branch '{"organizationId":"<organization-id>","repositoryId":"<repository-id>","branch":"feature/new"}'
+
+# 关闭尚未合并的 MR（外部状态变更，必须先取得明确授权）
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call close_change_request '{"organizationId":"<organization-id>","repositoryId":"<repository-id>","localId":"<mr-local-id>"}'
 
 # 复杂 JSON/Markdown 参数建议写入文件后再调用，避免 shell 引号转义问题
 cat >/tmp/workitem.json <<'EOF'
@@ -134,10 +137,10 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item h
 2. “提交分支”“创建 MR”“提请审核”只授权创建 MR，不授权合并。即使目标是测试环境，也不能在创建成功后自动继续合并。
 3. 只有用户明确要求合并当前 MR 时才执行合并。合并前重新读取 MR，确认目标分支、源提交、冲突状态、卡点状态和远端目标分支最新提交，避免使用创建时的旧状态。
 4. 用户要求撤回时先区分状态：
-   - 尚未合并：关闭 MR 或删除源分支，不改写目标分支。
+   - 尚未合并：关闭 MR 或删除源分支，不改写目标分支。关闭时先用 `get_change_request` 确认 MR 尚未合并，再优先调用原生 `close_change_request`；不要手写 `api POST`。
    - 已经合并：默认从最新目标分支创建 revert 提交，再通过新的 MR 撤回，保留审计历史。
    - 只有用户明确要求“强制撤回/改写历史”时，才考虑将目标分支回退到合并前提交。执行前必须证明目标分支在待撤回提交之后没有其他提交，并使用绑定当前远端 SHA 的 `--force-with-lease`；条件不满足立即停止。
-5. 创建、合并、revert、强制撤回是四个独立的外部状态变更。不要因为前一步获得授权而推断后续步骤也已获授权。
+5. 创建、关闭、合并、revert、强制撤回是相互独立的外部状态变更。不要因为前一步获得授权而推断后续步骤也已获授权。
 
 详细参数与示例见 [references/code-management.md](references/code-management.md)。
 

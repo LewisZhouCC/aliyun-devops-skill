@@ -160,19 +160,16 @@ export function pathEscape(filePath) {
  * @returns Properly encoded repository ID
  */
 export function handleRepositoryIdEncoding(repositoryId) {
-    let encodedRepoId = repositoryId;
-    // Automatically handle unencoded slashes in repositoryId
-    if (repositoryId.includes("/")) {
-        // Found unencoded slash, automatically URL encode it
-        const parts = repositoryId.split("/", 2);
-        if (parts.length === 2) {
-            const encodedRepoName = encodeURIComponent(parts[1]);
-            // Remove + signs from encoding (spaces are encoded as +, but we need %20)
-            const formattedEncodedName = encodedRepoName.replace(/\+/g, "%20");
-            encodedRepoId = `${parts[0]}%2F${formattedEncodedName}`;
-        }
+    // Already encoded repository paths must remain unchanged so `%2F` is not
+    // double encoded. For raw paths, encode every segment and every slash;
+    // repository paths may contain nested groups, not only `group/repo`.
+    if (!repositoryId.includes("/")) {
+        return repositoryId;
     }
-    return encodedRepoId;
+    return repositoryId
+        .split("/")
+        .map(segment => encodeURIComponent(segment))
+        .join("%2F");
 }
 /**
  * Converts a floating point number to an integer string (removes decimal point and decimal part)

@@ -1,6 +1,6 @@
 import { yunxiaoRequest, buildUrl, handleRepositoryIdEncoding, floatToIntString, isRegionEdition } from "../../common/utils.js";
 import { resolveOrganizationId } from "../organization/organization.js";
-import { ChangeRequestSchema, PatchSetSchema } from "./types.js";
+import { ChangeRequestSchema, CloseChangeRequestResponseSchema, PatchSetSchema } from "./types.js";
 // 通过API获取仓库的数字ID
 async function getRepositoryNumericId(organizationId, repositoryId) {
     const finalOrgId = await resolveOrganizationId(organizationId);
@@ -235,4 +235,22 @@ sourceCommitId
         body: payload,
     });
     return ChangeRequestSchema.parse(response);
+}
+/**
+ * 关闭尚未合并的合并请求
+ *
+ * @param organizationId 组织ID；中心版使用，Region版忽略
+ * @param repositoryId 代码库数字ID或完整路径
+ * @param localId 合并请求局部ID
+ */
+export async function closeChangeRequestFunc(organizationId, repositoryId, localId) {
+    const finalOrgId = await resolveOrganizationId(organizationId);
+    const encodedRepoId = handleRepositoryIdEncoding(repositoryId);
+    const url = isRegionEdition()
+        ? `/oapi/v1/codeup/repositories/${encodedRepoId}/changeRequests/${localId}/close`
+        : `/oapi/v1/codeup/organizations/${finalOrgId}/repositories/${encodedRepoId}/changeRequests/${localId}/close`;
+    const response = await yunxiaoRequest(url, {
+        method: "POST",
+    });
+    return CloseChangeRequestResponseSchema.parse(response);
 }

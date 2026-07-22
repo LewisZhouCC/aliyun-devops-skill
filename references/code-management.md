@@ -131,6 +131,7 @@ POST /oapi/v1/codeup/organizations/{organizationId}/repositories/{repositoryId}/
 ### 合并与撤回边界
 
 - 创建 MR 不代表授权合并。只有用户明确要求合并当前 MR 时才执行。
+- 关闭 MR 也是独立的外部状态变更。只有用户明确要求关闭当前 MR 时才执行。
 - 合并前重新查询 MR，检查目标分支、源提交、冲突状态和卡点状态。
 - 已合并 MR 默认通过“revert 分支 + 新 MR”撤回，不直接改写目标分支历史。
 - 只有用户明确要求强制撤回，并且确认待撤回提交之后没有其他提交时，才允许使用精确 lease：
@@ -146,6 +147,39 @@ git push \
 
 如果远端目标分支已经变化，`--force-with-lease` 必须失败；不要改用无 lease 的
 `--force` 绕过保护。
+
+### 关闭合并请求
+
+接口合同以阿里云云效
+[CloseChangeRequest 官方文档](https://help.aliyun.com/zh/yunxiao/developer-reference/closechangerequest-close-merge-request)
+为准。
+
+先使用 `get_change_request` 确认目标仓库、MR 局部 ID 和当前状态；仅当 MR 尚未
+合并且用户明确授权关闭时，调用原生工具：
+
+```bash
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call close_change_request '{
+  "organizationId": "<organization-id>",
+  "repositoryId": "<repository-id-or-encoded-full-path>",
+  "localId": "<mr-local-id>"
+}'
+```
+
+不要为关闭 MR 手写 `api POST`。原生工具会编码未编码的仓库完整路径、根据
+`YUNXIAO_API_BASE_URL` 选择中心版或 Region 版路径，并校验返回值为
+`{"result": true|false}`。Region 版可以省略 `organizationId`。
+
+中心版：
+
+```text
+POST /oapi/v1/codeup/organizations/{organizationId}/repositories/{repositoryId}/changeRequests/{localId}/close
+```
+
+Region 版：
+
+```text
+POST /oapi/v1/codeup/repositories/{repositoryId}/changeRequests/{localId}/close
+```
 
 ### 获取合并请求
 ```
@@ -203,6 +237,6 @@ GET /oapi/v1/codeup/organizations/{organizationId}/repositories/{repositoryId}/c
 
 ## 注意事项
 
-1. **repositoryId 编码**: 如果仓库 ID 包含斜杠（如 `group/repo`），需要 URL 编码为 `group%2Frepo`
+1. **repositoryId 编码**: 如果仓库 ID 包含斜杠（如 `group/nested/repo`），需要 URL 编码为 `group%2Fnested%2Frepo`；原生工具可自动编码未编码的完整路径
 2. **branchName 编码**: 如果分支名包含斜杠（如 `feature/xxx`），需要 URL 编码
 3. **文件内容**: 创建/更新文件时，内容需要 Base64 编码

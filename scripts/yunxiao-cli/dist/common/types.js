@@ -11,7 +11,7 @@ GetRepositorySchema, ListRepositoriesSchema,
 // Compare schemas
 GetCompareSchema, 
 // Change request schemas
-GetChangeRequestSchema, ListChangeRequestsSchema, CreateChangeRequestSchema, ListChangeRequestPatchSetsSchema, 
+GetChangeRequestSchema, ListChangeRequestsSchema, CreateChangeRequestSchema, CloseChangeRequestSchema, CloseChangeRequestResponseSchema, ListChangeRequestPatchSetsSchema,
 // Change request comment schemas
 CreateChangeRequestCommentSchema, ListChangeRequestCommentsSchema, UpdateChangeRequestCommentSchema, 
 // Commit schemas
