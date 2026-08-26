@@ -2,6 +2,7 @@
 
 ## 目录
 - [流水线操作](#流水线操作)
+- [流水线分组](#流水线分组)
 - [流水线运行](#流水线运行)
 - [任务管理](#任务管理)
 - [服务连接](#服务连接)
@@ -26,6 +27,36 @@ GET /oapi/v1/flow/organizations/{organizationId}/pipelines
 ```
 PUT /oapi/v1/flow/organizations/{organizationId}/pipelines/{pipelineId}
 ```
+
+## 流水线分组
+
+### 列出分组
+
+```bash
+yunxiao list_pipeline_groups '{"organizationId":"<组织ID>","maxResults":50}'
+```
+
+中心版请求为 `GET /oapi/v1/flow/organizations/{organizationId}/pipelineGroups`。
+
+### 获取分组
+
+```bash
+yunxiao get_pipeline_group '{"organizationId":"<组织ID>","groupId":146337}'
+```
+
+### 将流水线加入分组
+
+```bash
+yunxiao join_pipeline_group \
+  '{"organizationId":"<组织ID>","groupId":146337,"pipelineIds":[5168245,5168246]}'
+```
+
+中心版请求为
+`POST /oapi/v1/flow/organizations/{organizationId}/pipelineGroups/join`，
+`pipelineIds` 在请求中编码为逗号分隔的查询参数。`groupId=0` 表示移出分组。
+
+生产操作前必须确认资源归属、保存原始定义；操作后逐个调用 `get_pipeline`
+核验 `groupId`、触发器及流水线定义。不能仅以名称相同或接口返回成功作为完成依据。
 
 ## 流水线运行
 

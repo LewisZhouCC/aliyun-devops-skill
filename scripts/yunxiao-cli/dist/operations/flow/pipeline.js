@@ -80,6 +80,55 @@ export async function listPipelinesFunc(organizationId, options) {
         pagination
     };
 }
+
+/**
+ * 获取流水线分组列表。
+ * 云效中心版当前返回数组；兼容部分版本返回 pipelineGroups 包装对象。
+ */
+export async function listPipelineGroupsFunc(organizationId, options = {}) {
+    const finalOrgId = await resolveOrganizationId(organizationId);
+    const baseUrl = utils.isRegionEdition()
+        ? `/oapi/v1/flow/pipelineGroups`
+        : `/oapi/v1/flow/organizations/${finalOrgId}/pipelineGroups`;
+    const url = utils.buildUrl(baseUrl, {
+        ...(options.maxResults !== undefined && { maxResults: options.maxResults }),
+        ...(options.nextToken !== undefined && { nextToken: options.nextToken }),
+    });
+    const response = await utils.yunxiaoRequest(url, { method: "GET" });
+    if (Array.isArray(response)) {
+        return response;
+    }
+    if (response && Array.isArray(response.pipelineGroups)) {
+        return response.pipelineGroups;
+    }
+    return response;
+}
+
+/**
+ * 获取单个流水线分组详情。
+ */
+export async function getPipelineGroupFunc(organizationId, groupId) {
+    const finalOrgId = await resolveOrganizationId(organizationId);
+    const url = utils.isRegionEdition()
+        ? `/oapi/v1/flow/pipelineGroups/${groupId}`
+        : `/oapi/v1/flow/organizations/${finalOrgId}/pipelineGroups/${groupId}`;
+    return utils.yunxiaoRequest(url, { method: "GET" });
+}
+
+/**
+ * 将指定流水线加入分组。groupId=0 表示移出分组。
+ */
+export async function joinPipelineGroupFunc(organizationId, groupId, pipelineIds) {
+    const finalOrgId = await resolveOrganizationId(organizationId);
+    const baseUrl = utils.isRegionEdition()
+        ? `/oapi/v1/flow/pipelineGroups/join`
+        : `/oapi/v1/flow/organizations/${finalOrgId}/pipelineGroups/join`;
+    const url = utils.buildUrl(baseUrl, {
+        pipelineIds: pipelineIds.join(","),
+        groupId,
+    });
+    return utils.yunxiaoRequest(url, { method: "POST" });
+}
 /**
  * 智能查询流水线列表，能够解析自然语言中的时间表达
  * @param organizationId 组织ID

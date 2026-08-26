@@ -13,6 +13,32 @@ export const getPipelineTools = () => [
         inputSchema: zodToJsonSchema(types.ListPipelinesSchema),
     },
     {
+        name: "list_pipeline_groups",
+        description: "[Pipeline Group Management] List Flow pipeline groups. Resolve the exact target group before any production mutation.",
+        inputSchema: zodToJsonSchema(z.object({
+            organizationId: z.string().default("default").describe("Organization ID"),
+            maxResults: z.number().int().min(1).max(50).optional().describe("Maximum groups to return"),
+            nextToken: z.string().optional().describe("Pagination token"),
+        })),
+    },
+    {
+        name: "get_pipeline_group",
+        description: "[Pipeline Group Management] Get one Flow pipeline group by numeric ID.",
+        inputSchema: zodToJsonSchema(z.object({
+            organizationId: z.string().default("default").describe("Organization ID"),
+            groupId: z.number().int().nonnegative().describe("Pipeline group ID"),
+        })),
+    },
+    {
+        name: "join_pipeline_group",
+        description: "[Pipeline Group Management] Move exact pipeline IDs into a group. groupId=0 removes them from their current group. For production, verify ownership with two independent environment identifiers, save the pre-change definitions, and read back every pipeline after the change.",
+        inputSchema: zodToJsonSchema(z.object({
+            organizationId: z.string().default("default").describe("Organization ID"),
+            groupId: z.number().int().nonnegative().describe("Target group ID; 0 means ungrouped"),
+            pipelineIds: z.array(z.union([z.string().regex(/^[1-9]\d*$/), z.number().int().positive()])).min(1).describe("Exact pipeline IDs to move"),
+        })),
+    },
+    {
         name: "create_pipeline",
         description: "[Pipeline Management] Create a Yunxiao Flow pipeline from complete YAML content. Use this when the Flow YAML already exists and should be imported as-is.",
         inputSchema: zodToJsonSchema(types.CreatePipelineSchema),

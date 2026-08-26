@@ -27,6 +27,38 @@ export const handlePipelineTools = async (request) => {
                 content: [{ type: "text", text: JSON.stringify(pipelines, null, 2) }],
             };
         }
+        case "list_pipeline_groups": {
+            const args = z.object({
+                organizationId: z.string().default("default"),
+                maxResults: z.number().int().min(1).max(50).optional(),
+                nextToken: z.string().optional(),
+            }).parse(request.params.arguments);
+            const groups = await pipeline.listPipelineGroupsFunc(args.organizationId, args);
+            return {
+                content: [{ type: "text", text: JSON.stringify(groups, null, 2) }],
+            };
+        }
+        case "get_pipeline_group": {
+            const args = z.object({
+                organizationId: z.string().default("default"),
+                groupId: z.number().int().nonnegative(),
+            }).parse(request.params.arguments);
+            const group = await pipeline.getPipelineGroupFunc(args.organizationId, args.groupId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(group, null, 2) }],
+            };
+        }
+        case "join_pipeline_group": {
+            const args = z.object({
+                organizationId: z.string().default("default"),
+                groupId: z.number().int().nonnegative(),
+                pipelineIds: z.array(z.union([z.string().regex(/^[1-9]\d*$/), z.number().int().positive()])).min(1),
+            }).parse(request.params.arguments);
+            const result = await pipeline.joinPipelineGroupFunc(args.organizationId, args.groupId, args.pipelineIds);
+            return {
+                content: [{ type: "text", text: JSON.stringify({ success: Boolean(result) }, null, 2) }],
+            };
+        }
         case "create_pipeline": {
             const args = types.CreatePipelineSchema.parse(request.params.arguments);
             const pipelineId = await pipeline.createPipelineFunc(args.organizationId, args.name, args.content);

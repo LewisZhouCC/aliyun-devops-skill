@@ -5,7 +5,7 @@ description: 当用户需要查询或操作阿里云云效 DevOps / Yunxiao 资�
 
 # 阿里云 DevOps 技能
 
-本技能提供与阿里云云效平台交互的完整能力，包含 174 个工具。
+本技能提供与阿里云云效平台交互的完整能力，包含 177 个工具。
 
 ## 前置条件
 
@@ -60,6 +60,14 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" tool create_branch
 # 调用工具（使用完整的 MCP 业务逻辑）
 node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call get_current_organization_info
 
+# call 输出是 MCP envelope；业务 JSON 位于 content[].text 中。
+# 提取当前 organizationId 时必须解包并校验，不能直接读取顶层字段。
+org_result="$(node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call get_current_organization_info)"
+organization_id="$(printf '%s' "$org_result" | jq -er '
+  .content[] | select(.type == "text") | .text | fromjson | .lastOrganization
+')"
+test -n "$organization_id" && test "$organization_id" != "null"
+
 # 带参数调用
 node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call create_branch '{"organizationId":"<organization-id>","repositoryId":"<repository-id>","branch":"feature/new"}'
 
@@ -105,6 +113,13 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item h
 3. **CLI 信息不足时** → 查阅 references/ 目录下的详细文档
 4. **执行操作** → 优先使用 `call` 命令；遇到 wrapper 参数名与真实 API 不一致时，退回 `api` 命令
 
+`call` 的标准输出是 MCP `CallToolResult`，不是业务对象本身。需要把一个调用的结果作为下一次调用参数时：
+
+- 从 `.content[] | select(.type == "text") | .text | fromjson` 解包业务 JSON；
+- 使用 `jq -e` 校验必需字段存在；
+- 禁止把空字符串、`null` 或未解包的 envelope 字段作为 `organizationId`、`repositoryId`、`pipelineId` 等资源标识继续调用；
+- 如果解包失败，先打印经过筛选的类型/字段结构用于诊断，不要把完整响应或敏感参数原样输出。
+
 补充：
 
 - 创建 Projex 工作项时，优先使用 `create-work-item`
@@ -127,6 +142,16 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item h
 - `https://devops.aliyun.com/projex/project/...` → Projex 项目管理
 - `.../codeup/.../repositories/...` → Codeup 代码管理
 - `.../flow/.../pipelines/...` → Flow 流水线
+
+### 流水线分组与跨环境安全
+
+流水线名称和分组名称相同，不代表资源属于同一环境。修改现有流水线、分组或生产发布资源前：
+
+1. 至少用两个独立标识确认归属，例如 GitOps 仓库加集群/Namespace，或源码仓库/稳定分支加生产域名。
+2. 用 `get_pipeline` 对比线上定义与 owning repository 的版本化定义；生产变更前保存完整可恢复的线上定义和数值 ID。
+3. 先用 `list_pipeline_groups`、`get_pipeline_group` 解析明确的数值分组 ID，再调用 `join_pipeline_group`。
+4. API 返回成功不代表完成；变更后逐个 `get_pipeline`，确认 `groupId`、触发器和定义未发生非预期变化。
+5. `groupId=0` 表示移出当前分组。环境归属不明确时停止修改，创建带环境限定名的新资源。
 
 如果链接明确，优先按链接路由，而不是按用户口头提到的产品名路由。
 当前 CLI 已提供 `inspect` 子命令；需要快速判断链接归属时，优先使用 `inspect`，再配合 `search` / `tool` 查具体工具。
