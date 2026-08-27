@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_url="https://github.com/cocovs/aliyun-devops-skill.git"
+repo_url="https://github.com/LewisZhouCC/aliyun-devops-skill.git"
 skill_name="aliyun-devops"
 codex_home="${CODEX_HOME:-$HOME/.codex}"
 claude_home="${CLAUDE_HOME:-$HOME/.claude}"

@@ -7,7 +7,7 @@ Codex and Claude Code skill for operating Alibaba Cloud Yunxiao DevOps resources
 Install from GitHub:
 
 ```bash
-git clone https://github.com/cocovs/aliyun-devops-skill.git
+git clone https://github.com/LewisZhouCC/aliyun-devops-skill.git
 cd aliyun-devops-skill
 scripts/install.sh
 ```
