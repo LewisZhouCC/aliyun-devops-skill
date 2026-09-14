@@ -113,6 +113,11 @@ node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" create-work-item h
 3. **CLI 信息不足时** → 查阅 references/ 目录下的详细文档
 4. **执行操作** → 优先使用 `call` 命令；遇到 wrapper 参数名与真实 API 不一致时，退回 `api` 命令
 
+Flow 状态轮询优先使用 `list_pipeline_runs` 并设置 `perPage=1`；不要为获取整体
+Run 状态反复调用会展开 stage/job 参数的 `get_latest_pipeline_run` 或
+`get_pipeline_run`。需要阶段、失败原因或日志入口时，再读取
+[references/pipeline.md](references/pipeline.md) 的详细轮询规则。
+
 `call` 的标准输出是 MCP `CallToolResult`，不是业务对象本身。需要把一个调用的结果作为下一次调用参数时：
 
 - 从 `.content[] | select(.type == "text") | .text | fromjson` 解包业务 JSON；

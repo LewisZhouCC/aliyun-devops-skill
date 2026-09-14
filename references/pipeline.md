@@ -91,6 +91,36 @@ GET /oapi/v1/flow/organizations/{organizationId}/pipelines/{pipelineId}/runs
 - `status`: 状态（SUCCESS, RUNNING, FAIL, CANCELED, WAITING）
 - `page`, `perPage`: 分页
 
+### 状态轮询
+
+常规轮询只需要 Run 整体状态时，调用 `list_pipeline_runs`，并设置
+`page=1`、`perPage=1`。该调用返回 Run ID、状态、开始/结束时间、触发方式等摘要
+字段，适合反复检查：
+
+```bash
+node "$ALIYUN_DEVOPS_SKILL_DIR/scripts/yunxiao-cli/index.mjs" call list_pipeline_runs '{
+  "organizationId": "<organization-id>",
+  "pipelineId": "<pipeline-id>",
+  "page": 1,
+  "perPage": 1
+}' | jq -r '
+  .content[] | select(.type == "text") | .text | fromjson
+  | .items[0]
+  | [.pipelineRunId, .status, .startTime, .endTime] | @tsv
+'
+```
+
+不要为获取整体状态反复调用 `get_latest_pipeline_run` 或
+`get_pipeline_run`；运行详情会展开 stages、jobs、commands 和 params，响应明显更大，
+并可能包含已展开的敏感变量。只有以下情况才获取详情：
+
+- Run 失败，需要定位失败阶段或 Job；
+- Run 状态发生变化，需要确认阶段级进度；
+- 用户明确要求阶段、Job 或日志证据。
+
+获取详情时，将完整响应写入权限为 `0600` 的临时文件，只输出 allow-list 字段，
+解析后立即删除；不要把原始响应打印到终端、对话或文档。
+
 ## 任务管理
 
 ### 列出任务（按类别）
